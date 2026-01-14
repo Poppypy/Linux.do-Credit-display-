@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Linux.do Credit display
 // @namespace    https://tampermonkey.net/
-// @version      0.2.7
+// @version      0.2.8
 // @description  每天最多完整刷新一次 credit.linux.do 排行榜并缓存；支持断点续抓(指定页继续)、翻页、失败重试、429 等30s重试；在 linux.do 用户名旁显示 available_balance；带可折叠控制面板与缓存排行查看。
 // @author       popy
 // @match        https://linux.do/*
@@ -13,8 +13,8 @@
 // @grant        GM_addStyle
 // @grant        GM_registerMenuCommand
 // @connect      credit.linux.do
-// @updateURL    https://scriptcat.org/scripts/code/5163/Linux.do%20Credit%20display.user.js
-// @downloadURL  https://scriptcat.org/scripts/code/5163/Linux.do%20Credit%20display.user.js
+// @updateURL    https://raw.githubusercontent.com/Poppypy/Linux.do-Credit-display-/refs/heads/main/Linux.do-Credit-display.js
+// @downloadURL  https://raw.githubusercontent.com/Poppypy/Linux.do-Credit-display-/refs/heads/main/Linux.do-Credit-display.js
 // @license      MIT
 // ==/UserScript==
 
