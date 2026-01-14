@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Linux.do Credit display
 // @namespace    https://tampermonkey.net/
-// @version      0.3.5
+// @version      0.3.6
 // @description  每天最多完整刷新一次 credit.linux.do 排行榜并缓存；支持断点续抓(指定页继续)、翻页、失败重试、429 等30s重试；在 linux.do 用户名旁显示 available_balance；带可折叠控制面板与缓存排行查看。
 // @author       popy
 // @match        https://linux.do/*
@@ -332,7 +332,7 @@
     .ldc-lb-panel.collapsed{width:40px;height:40px;min-height:40px;border-radius:50%;padding:0;overflow:hidden}
     .ldc-lb-panel.collapsed .ldc-lb-header{padding:0;border:none;height:100%;justify-content:center}
     .ldc-lb-panel.collapsed .ldc-lb-title,.ldc-lb-panel.collapsed .ldc-lb-actions button:not([data-act="collapse"]),.ldc-lb-panel.collapsed .ldc-lb-body{display:none}
-    .ldc-lb-panel.collapsed .ldc-btn[data-act="collapse"]{width:100%;height:100%;border:none;background:transparent;font-size:16px}
+    .ldc-lb-panel.collapsed .ldc-btn[data-act="collapse"]{width:100%;height:100%;border:none;background:transparent;font-size:10px}
     .ldc-lb-panel.ldc-dragging{opacity:0.9;cursor:grabbing}
     .ldc-lb-header{display:flex;align-items:center;justify-content:space-between;padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.10)}
     .ldc-lb-panel.light .ldc-lb-header{border-bottom:1px solid rgba(0,0,0,.10)}
@@ -384,6 +384,7 @@
   let lockTimer = null;
   let dragging = false;
   let dragOffset = { x: 0, y: 0 };
+  let suppressCollapseClick = false;
 
   const panelState = (GM_getValue(STORE.panel, null) && typeof GM_getValue(STORE.panel, null) === 'object')
     ? GM_getValue(STORE.panel, null)
@@ -544,6 +545,7 @@
 
     const onDragMove = (e) => {
       if (!dragging) return;
+      suppressCollapseClick = true;
       const left = e.clientX - dragOffset.x;
       const top = e.clientY - dragOffset.y;
       panelEl.style.left = `${left}px`;
@@ -561,11 +563,14 @@
       document.removeEventListener('mousemove', onDragMove);
       document.removeEventListener('mouseup', onDragEnd);
       savePanelState();
+      // 防止拖动后立即触发点击导致自动展开/折叠
+      setTimeout(() => { suppressCollapseClick = false; }, 120);
     };
 
     const onDragStart = (e) => {
       if (e.button !== 0) return;
       dragging = true;
+      suppressCollapseClick = false;
       const rect = panelEl.getBoundingClientRect();
       dragOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
       panelEl.classList.add('ldc-dragging');
@@ -587,6 +592,7 @@
       const act = btn.getAttribute('data-act');
 
       if (act === 'collapse') {
+        if (suppressCollapseClick) return;
         panelState.collapsed = !panelState.collapsed;
         savePanelState();
         panelEl.classList.toggle('collapsed', panelState.collapsed);
