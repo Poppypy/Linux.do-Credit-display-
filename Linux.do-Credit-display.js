@@ -15,7 +15,7 @@
 // @connect      credit.linux.do
 // @updateURL    https://raw.githubusercontent.com/Poppypy/Linux.do-Credit-display-/refs/heads/main/Linux.do-Credit-display.js
 // @downloadURL  https://raw.githubusercontent.com/Poppypy/Linux.do-Credit-display-/refs/heads/main/Linux.do-Credit-display.js
-// @license      MIT
+// @icon         https://linux.do/uploads/default/optimized/4X/6/a/6/6a6affc7b1ce8140279e959d32671304db06d5ab_2_180x180.png
 // ==/UserScript==
 
 (function () {
