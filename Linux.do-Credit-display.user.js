@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Linux.do Credit display
 // @namespace    https://tampermonkey.net/
-// @version      0.3.2
+// @version      0.3.5
 // @description  每天最多完整刷新一次 credit.linux.do 排行榜并缓存；支持断点续抓(指定页继续)、翻页、失败重试、429 等30s重试；在 linux.do 用户名旁显示 available_balance；带可折叠控制面板与缓存排行查看。
 // @author       popy
 // @match        https://linux.do/*
@@ -329,8 +329,14 @@
     .ldc-lb-panel{position:fixed;right:14px;bottom:14px;z-index:999999;background:var(--secondary, #111);color:var(--primary, #fff);
       border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);width:360px;max-height:72vh;overflow:hidden;font-size:12px}
     .ldc-lb-panel.light{background:#fff;color:#111;border:1px solid rgba(0,0,0,.12)}
+    .ldc-lb-panel.collapsed{width:52px;height:52px;min-height:52px;border-radius:50%;padding:0;overflow:hidden}
+    .ldc-lb-panel.collapsed .ldc-lb-header{padding:0;border:none;height:100%;justify-content:center}
+    .ldc-lb-panel.collapsed .ldc-lb-title,.ldc-lb-panel.collapsed .ldc-lb-actions button:not([data-act="collapse"]),.ldc-lb-panel.collapsed .ldc-lb-body{display:none}
+    .ldc-lb-panel.collapsed .ldc-btn[data-act="collapse"]{width:100%;height:100%;border:none;background:transparent;font-size:18px}
+    .ldc-lb-panel.ldc-dragging{opacity:0.9;cursor:grabbing}
     .ldc-lb-header{display:flex;align-items:center;justify-content:space-between;padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.10)}
     .ldc-lb-panel.light .ldc-lb-header{border-bottom:1px solid rgba(0,0,0,.10)}
+    .ldc-lb-header{cursor:grab}
     .ldc-lb-title{font-weight:700}
     .ldc-lb-actions{display:flex;gap:6px;align-items:center}
     .ldc-btn{cursor:pointer;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:inherit;border-radius:8px;padding:6px 8px;font-size:12px}
@@ -376,10 +382,12 @@
   let running = false;
   let stopFlag = false;
   let lockTimer = null;
+  let dragging = false;
+  let dragOffset = { x: 0, y: 0 };
 
   const panelState = (GM_getValue(STORE.panel, null) && typeof GM_getValue(STORE.panel, null) === 'object')
     ? GM_getValue(STORE.panel, null)
-    : { collapsed: false, light: false, rankPage: 1 };
+    : { collapsed: false, light: false, rankPage: 1, left: null, top: null };
 
   function savePanelState() { GM_setValue(STORE.panel, panelState); }
 
@@ -404,7 +412,13 @@
 
   function createPanel() {
     panelEl = document.createElement('div');
-    panelEl.className = 'ldc-lb-panel' + (panelState.light ? ' light' : '');
+    panelEl.className = 'ldc-lb-panel' + (panelState.light ? ' light' : '') + (panelState.collapsed ? ' collapsed' : '');
+    if (Number.isFinite(panelState.left) && Number.isFinite(panelState.top)) {
+      panelEl.style.left = `${panelState.left}px`;
+      panelEl.style.top = `${panelState.top}px`;
+      panelEl.style.right = 'auto';
+      panelEl.style.bottom = 'auto';
+    }
     panelEl.innerHTML = `
       <div class="ldc-lb-header">
         <div class="ldc-lb-title">💳 Credit 排行榜缓存</div>
@@ -526,6 +540,44 @@
     rankPageEl = panelEl.querySelector('[data-k="rankPageText"]');
     rankPrevBtn = panelEl.querySelector('[data-k="rankPrev"]');
     rankNextBtn = panelEl.querySelector('[data-k="rankNext"]');
+    const headerEl = panelEl.querySelector('.ldc-lb-header');
+
+    const onDragMove = (e) => {
+      if (!dragging) return;
+      const left = e.clientX - dragOffset.x;
+      const top = e.clientY - dragOffset.y;
+      panelEl.style.left = `${left}px`;
+      panelEl.style.top = `${top}px`;
+      panelEl.style.right = 'auto';
+      panelEl.style.bottom = 'auto';
+      panelState.left = left;
+      panelState.top = top;
+    };
+
+    const onDragEnd = () => {
+      if (!dragging) return;
+      dragging = false;
+      panelEl.classList.remove('ldc-dragging');
+      document.removeEventListener('mousemove', onDragMove);
+      document.removeEventListener('mouseup', onDragEnd);
+      savePanelState();
+    };
+
+    const onDragStart = (e) => {
+      if (e.button !== 0) return;
+      dragging = true;
+      const rect = panelEl.getBoundingClientRect();
+      dragOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+      panelEl.classList.add('ldc-dragging');
+      document.addEventListener('mousemove', onDragMove);
+      document.addEventListener('mouseup', onDragEnd);
+      e.preventDefault();
+    };
+
+    headerEl?.addEventListener('mousedown', onDragStart);
+    panelEl.addEventListener('mousedown', (e) => {
+      if (panelState.collapsed && e.button === 0) onDragStart(e);
+    });
 
     // 绑定事件：按钮
     panelEl.addEventListener('click', (e) => {
@@ -537,6 +589,7 @@
       if (act === 'collapse') {
         panelState.collapsed = !panelState.collapsed;
         savePanelState();
+        panelEl.classList.toggle('collapsed', panelState.collapsed);
         btn.textContent = panelState.collapsed ? '➕' : '➖';
         bodyEl.style.display = panelState.collapsed ? 'none' : '';
         return;
@@ -1173,6 +1226,7 @@ if (act === 'support20') {
       savePanelState();
       const btn = panelEl.querySelector('button[data-act="collapse"]');
       btn.textContent = panelState.collapsed ? '➕' : '➖';
+      panelEl.classList.toggle('collapsed', panelState.collapsed);
       bodyEl.style.display = panelState.collapsed ? 'none' : '';
     });
 
