@@ -329,10 +329,10 @@
     .ldc-lb-panel{position:fixed;right:14px;bottom:14px;z-index:999999;background:var(--secondary, #111);color:var(--primary, #fff);
       border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.35);width:360px;max-height:72vh;overflow:hidden;font-size:12px}
     .ldc-lb-panel.light{background:#fff;color:#111;border:1px solid rgba(0,0,0,.12)}
-    .ldc-lb-panel.collapsed{width:52px;height:52px;min-height:52px;border-radius:50%;padding:0;overflow:hidden}
+    .ldc-lb-panel.collapsed{width:40px;height:40px;min-height:40px;border-radius:50%;padding:0;overflow:hidden}
     .ldc-lb-panel.collapsed .ldc-lb-header{padding:0;border:none;height:100%;justify-content:center}
     .ldc-lb-panel.collapsed .ldc-lb-title,.ldc-lb-panel.collapsed .ldc-lb-actions button:not([data-act="collapse"]),.ldc-lb-panel.collapsed .ldc-lb-body{display:none}
-    .ldc-lb-panel.collapsed .ldc-btn[data-act="collapse"]{width:100%;height:100%;border:none;background:transparent;font-size:18px}
+    .ldc-lb-panel.collapsed .ldc-btn[data-act="collapse"]{width:100%;height:100%;border:none;background:transparent;font-size:16px}
     .ldc-lb-panel.ldc-dragging{opacity:0.9;cursor:grabbing}
     .ldc-lb-header{display:flex;align-items:center;justify-content:space-between;padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.10)}
     .ldc-lb-panel.light .ldc-lb-header{border-bottom:1px solid rgba(0,0,0,.10)}
