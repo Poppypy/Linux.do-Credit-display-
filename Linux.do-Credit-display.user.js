@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Linux.do Credit display
 // @namespace    https://tampermonkey.net/
-// @version      0.3.0
+// @version      0.2.10
 // @description  每天最多完整刷新一次 credit.linux.do 排行榜并缓存；支持断点续抓(指定页继续)、翻页、失败重试、429 等30s重试；在 linux.do 用户名旁显示 available_balance；带可折叠控制面板与缓存排行查看。
 // @author       popy
 // @match        https://linux.do/*
