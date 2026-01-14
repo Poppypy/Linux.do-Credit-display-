@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Linux.do Credit display
 // @namespace    https://tampermonkey.net/
-// @version      0.3.1
+// @version      0.3.2
 // @description  每天最多完整刷新一次 credit.linux.do 排行榜并缓存；支持断点续抓(指定页继续)、翻页、失败重试、429 等30s重试；在 linux.do 用户名旁显示 available_balance；带可折叠控制面板与缓存排行查看。
 // @author       popy
 // @match        https://linux.do/*
@@ -32,7 +32,7 @@
 
   const STORE = {
     meta: 'ldc_lb_meta_v2',
-    list: 'ldc_lb_list_v2',          // [[id, username, balanceStr], ...] 按排名顺序
+    list: 'ldc_lb_list_v2',         
     idxById: 'ldc_lb_idx_id_v2',     // { "9797": 8, ... } => index in list
     idxByName: 'ldc_lb_idx_name_v2', // { "zh-heng": 8, ... } => index in list
     settings: 'ldc_lb_settings_v2',
